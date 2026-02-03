@@ -5,11 +5,12 @@ on:
     branches:
       - dev
     paths:
-      - 'lambda_function.py' # Only deploy if the producer code changes
+      - 'produce_weather.py'
+  workflow_dispatch:  # <--- THIS ADDS THE MANUAL CLICK BUTTON
 
 permissions:
-  id-token: write   # Required for OIDC
-  contents: read    # Required for checkout
+  id-token: write
+  contents: read
 
 jobs:
   deploy:
@@ -24,9 +25,9 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: us-west-2
 
-      - name: Zip and Update Lambda
+      - name: Zip and Update Producer Lambda
         run: |
-          zip -j deploy.zip lambda_function.py
+          zip -j deploy.zip produce_weather.py
           aws lambda update-function-code \
-            --function-name Your_Lambda_Function_Name \
+            --function-name produce_weather \
             --zip-file fileb://deploy.zip
