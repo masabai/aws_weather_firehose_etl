@@ -1,4 +1,4 @@
-*** WORK IN PROGRESS ***
+#### -----------------------------------------------------    WORK IN PROGRESS ----------------------------------------------------------- ####
 
 # aws_weather_firehose_etl: Serverless Weather Stream
 This project demonstrates a fully functional Streaming Data Lake that ingests multi-city weather and AQI
