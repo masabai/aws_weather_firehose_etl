@@ -2,8 +2,7 @@
 Streamlit Dashboard: HHS Region 9 Health Watch
 ---------------------------------------------
 Visualizes real-time health and weather metrics derived from the AWS
-Athena 'weather_gold' table. Includes KPI metrics for risk alerts,
-regional temperature averages, and a custom Altair-based risk chart.
+Athena 'weather_gold' table.
 
 Usage:
     streamlit run app.py
@@ -17,30 +16,30 @@ import altair as alt
 # 1. Page & AWS Configuration
 st.set_page_config(page_title="HHS Region 9 Health Watch", layout="wide")
 
+# Fixed Configuration
 REGION = "us-west-2"
 S3_STAGING = "s3://weather-stream-data-etl/athena-results/"
 DB = "steam_weather"
 
-
 def get_data():
     """
-    Establishes connection to Amazon Athena and retrieves the latest
-    processed records from the Gold zone.
-
-    Returns:
-        pd.DataFrame: Dataframe containing processed weather and health metrics.
+    Connects to Athena using credentials from Streamlit Secrets.
     """
-    conn = connect(s3_staging_dir=S3_STAGING, region_name=REGION)
+    # Streamlit Cloud retrieves these from the 'Secrets' panel in your dashboard
+    conn = connect(
+        s3_staging_dir=S3_STAGING,
+        region_name=REGION,
+        aws_access_key_id=st.secrets["AWS_ACCESS_KEY_ID"],
+        aws_secret_access_key=st.secrets["AWS_SECRET_ACCESS_KEY"]
+    )
     query = f"SELECT * FROM {DB}.weather_gold ORDER BY timestamp DESC"
     return pd.read_sql(query, conn)
-
 
 # 2. Sidebar & Global Controls
 st.title("Weather & Flu Watch Alerts")
 st.sidebar.header("Pipeline Status: LIVE")
 
 if st.sidebar.button('Refresh Data'):
-    # Clears the Streamlit cache to force a fresh Athena query
     st.cache_data.clear()
     st.rerun()
 
@@ -51,18 +50,16 @@ df = get_data()
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    # Count occurrences of 'High Risk' in the flu_risk_category column
     high_risk_count = len(df[df['flu_risk_category'] == 'High Risk'])
     st.metric("High Risk Alerts", high_risk_count, delta_color="inverse")
 
 with col2:
-    # Calculate the mean temperature across the region
     avg_temp = round(df['temp_current_f'].mean(), 1)
     st.metric("Avg Region Temp", f"{avg_temp}°F")
 
 with col3:
-    # Display the most recent timestamp in a readable format
     if not df.empty:
+        # Puts the most recent sync time in the header
         latest_update = df['timestamp'].iloc[0][:16].replace('T', ' ')
         st.write(f"**Last Sync (UTC):** {latest_update}")
     else:
@@ -71,13 +68,11 @@ with col3:
 # 5. Visualizations: Regional Risk Breakdown
 st.subheader("Regional Risk Breakdown")
 
-# Explicit color mapping for risk levels: Red (High), Blue (Moderate), Green (Low)
 color_scale = alt.Scale(
     domain=['High Risk', 'Moderate Risk', 'Low Risk'],
     range=['#FF0000', '#0000FF', '#00FF00']
 )
 
-# Constructing the Altair bar chart
 chart = alt.Chart(df).mark_bar().encode(
     x=alt.X('state:N', title='State'),
     y=alt.Y('cold_flu_index:Q', title='Cold/Flu Index'),
