@@ -8,7 +8,7 @@ data to either the 'silver/' zone (clean) or 'quarantine/' zone (errors).
 Workflow:
 1. Triggered by S3 Put in 'raw/'.
 2. Validates presence of required weather/health fields.
-3. Decouples clean data for downstream analytics (Athena/QuickSight).
+3. Decouples clean data for downstream analytics (Athena).
 """
 
 import boto3

@@ -104,7 +104,7 @@ def lambda_handler(event, context):
             # Put Record to Kinesis Firehose
             firehose.put_record(
                 DeliveryStreamName=STREAM_NAME,
-                Record={"Data": json.dumps(record) + "\n"}
+                Record={"Data": json.dumps(record) + "\n"} #+ "\n" -> convert NDJSON
             )
             count += 1
             print(f"Success: {loc['name']}")
