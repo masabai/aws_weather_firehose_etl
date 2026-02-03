@@ -1,16 +1,18 @@
-name: Deploy Weather Producer
+name: Deploy Weather Pipeline
 
 on:
   push:
     branches:
       - dev
+      - main
     paths:
-      - 'produce_weather.py'
-  workflow_dispatch:  # <--- THIS ADDS THE MANUAL CLICK BUTTON
+      - 'producer/produce_weather.py'
+      - 'validation/validate_weather.py'
+  workflow_dispatch: # Allows manual "Run workflow" button click
 
 permissions:
-  id-token: write
-  contents: read
+  id-token: write   # Required for OIDC handshake
+  contents: read    # Required to checkout code
 
 jobs:
   deploy:
@@ -25,9 +27,22 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: us-west-2
 
-      - name: Zip and Update Producer Lambda
+      - name: Deploy Producer Lambda
         run: |
-          zip -j deploy.zip produce_weather.py
+          # Zip the producer file (junking the folder path)
+          zip -j producer.zip producer/produce_weather.py
+          
+          # Update the Producer Lambda
           aws lambda update-function-code \
             --function-name produce_weather \
-            --zip-file fileb://deploy.zip
+            --zip-file fileb://producer.zip
+
+      - name: Deploy Validator Lambda
+        run: |
+          # Zip the validator file (junking the folder path)
+          zip -j validator.zip validation/validate_weather.py
+          
+          # Update the Validator Lambda
+          aws lambda update-function-code \
+            --function-name validate_weather \
+            --zip-file fileb://validator.zip

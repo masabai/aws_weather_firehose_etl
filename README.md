@@ -1,3 +1,5 @@
+*** WORK IN PROGRESS ***
+
 # aws_weather_firehose_etl: Serverless Weather Stream
 This project demonstrates a fully functional Streaming Data Lake that ingests multi-city weather and AQI
 data using a Schema-on-Read architecture. It is designed to monitor regional health risks—specifically Flu 
