@@ -22,9 +22,3 @@ risks, querying directly from S3 using a Schema-on-Read approach.
 retrieves data via an API to avoid hardcoding AWS Access Keys or Secret Keys within the application code. 
 The dashboard uses a Manual Refresh button and 60-second caching to prevent Amazon Athena scan costs. 
 
-## Repository Contents
-producer/: extract_produce_weather.py – Core data ingestion script connecting local producers to AWS Firehose.
-validation/: lambda_validator.py – S3-triggered Lambda function for data cleansing and folder-prefix enforcement.
-database/: athena_setup.sql – DDL scripts to transform raw S3 JSON into queryable tables and managed views.
-dashboard/: weather_watch_app.py – Streamlit application utilizing Altair for color-coded risk visualization and PyAthena for data retrieval.
-
