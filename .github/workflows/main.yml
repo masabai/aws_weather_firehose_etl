@@ -3,7 +3,7 @@ name: Deploy Weather Producer
 on:
   push:
     branches:
-      - main
+      - dev
     paths:
       - 'lambda_function.py' # Only deploy if the producer code changes
 
