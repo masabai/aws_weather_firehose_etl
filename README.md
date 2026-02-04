@@ -22,3 +22,5 @@ risks, querying directly from S3 using a Schema-on-Read approach.
 retrieves data via an API to avoid hardcoding AWS Access Keys or Secret Keys within the application code. 
 The dashboard uses a Manual Refresh button and 60-second caching to prevent Amazon Athena scan costs. 
 
+![Weather Streamlit Dashboard](screenshots/weather_streamlit.png)
+
