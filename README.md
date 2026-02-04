@@ -7,7 +7,9 @@ This project demonstrates a fully functional Streaming Data Lake that ingests mu
 
 ## The Architecture
 
-**Producer** Python (Boto3) local application streaming NDJSON to the cloud. The engine fetches data from OpenWeather and AccuWeather APIs and pushes to AWS Firehose, which provides serverless transport and buffering for delivery to S3.  
+##### *Producer: Python Application Streaming NDJSON to Firehose* #####
+
+Python (Boto3) local application streaming NDJSON to the cloud. The engine fetches data from OpenWeather and AccuWeather APIs and pushes to AWS Firehose, which provides serverless transport and buffering for delivery to S3.  
 This scheduled execution model enables fully automated, time-based ingestion without reliance on always-on services or local cron jobs.
 
 ---
