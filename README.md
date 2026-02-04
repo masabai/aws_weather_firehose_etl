@@ -12,13 +12,13 @@ Midwest, Northeast, and Southeast).
 OpenWeather and AccuWeather APIs and pushes to AWS Firehose, which provides serverless transport and buffering for delivery to S3.
 This scheduled execution model enables fully automated, time-based ingestion without reliance on always-on services or local cron jobs.
 
-### Amazon EventBridge rule triggering the producer Lambda on a fixed schedule for continuous weather data ingestion
+##### Amazon EventBridge rule triggering the producer Lambda on a fixed schedule for continuous weather data ingestion #####
 
 ![EventBridge Schedule for Weather Ingestion](screenshots/weather_event_schedule.png)
 
+##### *CloudWatch logs showing the Producer Lambda successfully streaming weather data to Firehose and S3 in real time.* #####
 ![CloudWatch Producer Logs](screenshots/cloud_watch_petaluma.png)
 
-*CloudWatch logs showing the Producer Lambda successfully streaming weather data to Firehose and S3 in real time.*
 
 **Processing**: AWS Lambda (Event-Driven) is triggered by S3 raw/ uploads to validate data and prevent 
 recursive loops through strict prefix filtering and application-level execution gating.
