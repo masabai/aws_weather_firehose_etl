@@ -3,10 +3,10 @@ import pandas as pd
 import requests
 import altair as alt
 
-# 1. Page Configuration
+# Page Configuration
 st.set_page_config(page_title="HHS Region 9 Health Watch", layout="wide")
 
-# 2. API CONFIGURATION
+# API CONFIGURATION
 API_URL = "https://3l6spjxqv5.execute-api.us-west-2.amazonaws.com/default/weather_api_proxy"
 
 
@@ -22,7 +22,7 @@ def get_data_from_api():
         return pd.DataFrame()
 
 
-# 3. Sidebar & Global Controls
+# Sidebar & Global Controls
 st.title(" Weather & Flu Watch Alerts")
 st.sidebar.header("Pipeline Status: LIVE")
 
@@ -34,7 +34,7 @@ if st.sidebar.button('Manual Refresh'):
 df = get_data_from_api()
 
 if not df.empty:
-    # 5. KPI Metric Row
+    # KPI Metric Row
     col1, col2, col3 = st.columns(3)
     with col1:
         high_risk_count = len(df[df['flu_risk_category'] == 'High Risk'])
@@ -50,7 +50,7 @@ if not df.empty:
         latest_ts = df['timestamp'].iloc[0][:16].replace('T', ' ')
         st.write(f"**Last Sync (UTC):** {latest_ts}")
 
-    # 6. Visualization
+    # Visualization
     st.subheader("Regional Risk Breakdown")
     color_scale = alt.Scale(
         domain=['High Risk', 'Moderate Risk', 'Low Risk'],
