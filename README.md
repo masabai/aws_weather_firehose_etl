@@ -9,7 +9,7 @@ Midwest, Northeast, and Southeast).
 
 ## The Architecture
 
-**Producer**: Python (Boto3) local application streaming ndjson to the cloud. The engine fetches data from 
+**Producer** Python (Boto3) local application streaming ndjson to the cloud. The engine fetches data from 
 OpenWeather and AccuWeather APIs and pushes to AWS Firehose, which provides serverless transport and buffering for delivery to S3.
 This scheduled execution model enables fully automated, time-based ingestion without reliance on always-on services or local cron jobs.
 
