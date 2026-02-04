@@ -12,7 +12,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS steam_weather.weather_bronze (
     wind_speed double,
     weather_description string,
     aqi int,
-    pm2_5 double,
+    --pm2_5 double,
     pm10 double,
     co double,
     no2 double,
