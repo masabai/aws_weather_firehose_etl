@@ -7,6 +7,10 @@ Midwest, Northeast, and Southeast).
 ## The Architecture
 **Producer**: Python (Boto3) local application streaming ndjson to the cloud. The engine fetches data from 
 OpenWeather and AccuWeather APIs and pushes to AWS Firehose, which provides serverless transport and buffering for delivery to S3.
+This scheduled execution model enables fully automated, time-based ingestion without reliance on always-on services or local cron jobs.
+
+**Amazon EventBridge rule triggering the producer Lambda on a fixed schedule for continuous weather data ingestion**
+![EventBridge Schedule for Weather Ingestion](screenshots/weather_event_schedule.png)
 
 ![CloudWatch Producer Logs](screenshots/cloud_watch_petaluma.png)
 
