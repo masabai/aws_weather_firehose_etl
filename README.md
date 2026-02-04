@@ -23,8 +23,10 @@ This scheduled execution model enables fully automated, time-based ingestion wit
 ![CloudWatch Producer Logs](screenshots/cloud_watch_petaluma.png)
 
 
-**Processing**: AWS Lambda (Event-Driven) is triggered by S3 raw/ uploads to validate data and prevent 
-recursive loops through strict prefix filtering and application-level execution gating.
+**Processing**: AWS Lambda is triggered by S3 `ObjectCreated` events in the `raw/` prefix to perform automated data validation.  
+It inspects each record for required weather and health fields, filters out malformed or incomplete entries, and routes clean data to the `silver/` zone while sending errors to a `quarantine/` zone for investigation.  
+Strict prefix filtering and application-level execution gating prevent recursive loops when writing back to S3.  
+This design ensures only high-quality, analytics-ready data is available for downstream processing with Athena, QuickSight, or other tools.  
 
 ![Lambda Trigger Screenshot](https://raw.githubusercontent.com/masabai/aws_weather_firehose_etl/main/screenshots/weather_lambda_trigger_s3.png)
 
