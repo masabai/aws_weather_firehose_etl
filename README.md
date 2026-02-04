@@ -28,11 +28,17 @@ It inspects each record for required weather and health fields, filters out malf
 Strict prefix filtering and application-level execution gating prevent recursive loops when writing back to S3.  
 This design ensures only high-quality, analytics-ready data is available for downstream processing with Athena, QuickSight, or other tools.  
 
+
 ![Lambda Trigger Screenshot](https://raw.githubusercontent.com/masabai/aws_weather_firehose_etl/main/screenshots/weather_lambda_trigger_s3.png)
+
 
 **Storage**: Amazon S3 Partitioned Data Lake organized via a Medallion Architecture (Raw, Silver, and Gold 
 tiers). To maintain a zero-cost, S3 Lifecycle Policies are implemented to automatically recycle 
 athena-results/ and raw/ data after a defined retention period.
+
+
+![S3 Firehose Storage Screenshot](https://raw.githubusercontent.com/masabai/aws_weather_firehose_etl/main/screenshots/weather_s3_firehose.png)
+
 
 **Analytics**: Amazon Athena (SQL-based analytics) provides a "Latest Status" snapshot of regional health
 risks, querying directly from S3 using a Schema-on-Read approach.
