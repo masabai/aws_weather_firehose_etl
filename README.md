@@ -5,16 +5,7 @@ and Migraine indices—with comprehensive coverage across all major US regions (
 Midwest, Northeast, and Southeast).
 
 **End-to-End Flow:**  
-EventBridge (Schedule)
-  → Producer Lambda
-    → Kinesis Data Firehose
-      → Amazon S3 (Raw)
-        → Validator Lambda
-          → Silver Zone (Clean Data)
-          → Quarantine Zone (Errors)
-            → Athena (Analytics)
-              → Streamlit Dashboard
-                → GitHub Actions (CI/CD Deploy)
+`EventBridge (Schedule) → Producer Lambda → Kinesis Data Firehose → S3 Raw → Validator Lambda → Silver Zone → Quarantine Zone → Athena → Streamlit → GitHub Actions`
 
 ## The Architecture
 **Producer**: Python (Boto3) local application streaming ndjson to the cloud. The engine fetches data from 
