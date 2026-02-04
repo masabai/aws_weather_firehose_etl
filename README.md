@@ -26,6 +26,8 @@ This scheduled execution model enables fully automated, time-based ingestion wit
 **Processing**: AWS Lambda (Event-Driven) is triggered by S3 raw/ uploads to validate data and prevent 
 recursive loops through strict prefix filtering and application-level execution gating.
 
+![Lambda Trigger Screenshot](https://raw.githubusercontent.com/masabai/aws_weather_firehose_etl/main/screenshots/weather_lambda_trigger_s3.png)
+
 **Storage**: Amazon S3 Partitioned Data Lake organized via a Medallion Architecture (Raw, Silver, and Gold 
 tiers). To maintain a zero-cost, S3 Lifecycle Policies are implemented to automatically recycle 
 athena-results/ and raw/ data after a defined retention period.
