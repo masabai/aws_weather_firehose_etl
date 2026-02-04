@@ -4,7 +4,7 @@ data using a Schema-on-Read architecture. It is designed to monitor regional hea
 and Migraine indices—with comprehensive coverage across all major US regions (West, Mountain, South Central,
 Midwest, Northeast, and Southeast).
 
-**End-to-End Flow:**  
+### End-to-End Flow: ###
 `EventBridge (Schedule) → Producer Lambda → Kinesis Data Firehose → S3 Raw → Validator Lambda → Silver Zone → Quarantine Zone → Athena → Streamlit → GitHub Actions`
 
 ## The Architecture
