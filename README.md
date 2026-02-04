@@ -33,3 +33,13 @@ The dashboard uses a Manual Refresh button and 60-second caching to prevent Amaz
 
 ![Weather Streamlit Dashboard](screenshots/weather_streamlit.png)
 
+## CI/CD & Automated Deployment
+The project uses GitHub Actions to automate the deployment and validation of the AWS serverless weather pipeline.  
+On each push to the main branch, the workflow provisions and deploys cloud resources, validates configuration changes, and ensures the pipeline remains reproducible and consistent across environments.
+
+This approach enables continuous delivery without manual AWS console intervention, reducing deployment risk and configuration drift.
+
+![Weather Pipeline Deployment](screenshots/deploy_weather_pipeline.png)
+
+![GitHub Actions Workflow](screenshots/ga_workflow.png)
+
