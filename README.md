@@ -8,6 +8,8 @@ Midwest, Northeast, and Southeast).
 **Producer**: Python (Boto3) local application streaming ndjson to the cloud. The engine fetches data from 
 OpenWeather and AccuWeather APIs and pushes to AWS Firehose, which provides serverless transport and buffering for delivery to S3.
 
+![CloudWatch Producer Logs](screenshots/cloud_watch_petaluma.png)
+
 **Processing**: AWS Lambda (Event-Driven) is triggered by S3 raw/ uploads to validate data and prevent 
 recursive loops through strict prefix filtering and application-level execution gating.
 
@@ -17,6 +19,9 @@ athena-results/ and raw/ data after a defined retention period.
 
 **Analytics**: Amazon Athena (SQL-based analytics) provides a "Latest Status" snapshot of regional health
 risks, querying directly from S3 using a Schema-on-Read approach.
+
+![Athena Analytics Results](screenshots/weather_athena_results.png)
+
 
 **Dashboard**: Streamlit application providing real-time Weather & Flu alerts visualization. The dashboard 
 retrieves data via an API to avoid hardcoding AWS Access Keys or Secret Keys within the application code. 
