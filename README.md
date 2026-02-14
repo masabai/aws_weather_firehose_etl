@@ -2,8 +2,43 @@
 
 This project demonstrates a fully functional Streaming Data Lake that ingests multi-city weather and AQI data using a Schema-on-Read architecture. It is designed to monitor regional health risks—specifically Flu and Migraine indices—with comprehensive coverage across all major US regions (West, Mountain, South Central, Midwest, Northeast, and Southeast).
 
-### End-to-End Flow ###
-`EventBridge (Schedule) → Producer Lambda → Kinesis Data Firehose → S3 Raw → Validator Lambda → Silver Zone → Quarantine Zone → Athena → Streamlit → GitHub Actions`
+### End-to-End Workflow ###
+
+``` mermaid
+graph LR
+    %% Trigger & Ingestion
+    subgraph Ingestion [Ingestion & Streaming]
+    A[EventBridge] --> B(Producer Lambda)
+    B --> C{Kinesis Firehose}
+    end
+
+    %% Storage & Validation
+    subgraph Processing [Validation & Storage]
+    C --> D[(S3 Raw)]
+    D --> E(Validator Lambda)
+    E --> F[(Silver Zone)]
+    E --> G[(Quarantine)]
+    end
+
+    %% Analytics & CI/CD
+    subgraph Insights [Analytics & DevOps]
+    F --> H[Athena]
+    H --> I[Streamlit]
+    J[GitHub Actions] -.-> B
+    J -.-> E
+    end
+
+    %% High-End Styling
+    style Ingestion fill:#232f3e,stroke:#333,color:#fff
+    style Processing fill:#ff9900,stroke:#333,color:#000
+    style Insights fill:#4a148c,stroke:#333,color:#fff
+    
+    style A fill:#fff,color:#000
+    style D fill:#fff,color:#000
+    style F fill:#fff,color:#000
+    style I fill:#ff4b4b,stroke:#333,color:#fff
+
+```
 
 ## The Architecture
 
