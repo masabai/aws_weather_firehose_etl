@@ -12,25 +12,37 @@ API_URL = "https://3l6spjxqv5.execute-api.us-west-2.amazonaws.com"
 
 @st.cache_data(ttl=60)
 def get_data_from_api():
-    """Fetches data and handles the AWS Lambda Proxy 'body' string wrapper."""
+    """
+    Fetches data and handles the AWS Lambda Proxy Integration 'body' string wrapper.
+    If it worked 2 weeks ago and broke now, the API is likely wrapping the data 
+    in a stringified 'body' key due to a Lambda Proxy Integration setting.
+    """
     try:
         response = requests.get(API_URL)
         response.raise_for_status()
         
-        # Parse the top-level JSON from API Gateway
-        api_response = response.json()
+        # 1. Parse the top-level JSON from API Gateway
+        res_data = response.json()
         
-        # Extract the 'body' string (this is what changed in your AWS setup)
-        # If 'body' doesn't exist, fall back to the whole response
-        if isinstance(api_response, dict) and 'body' in api_response:
-            raw_data = json.loads(api_response['body'])
+        # 2. Extract the 'body'. In Proxy mode, AWS sends the list as a STRING inside 'body'
+        # We must use json.loads() a SECOND time to turn that string into a list.
+        if isinstance(res_data, dict) and 'body' in res_data:
+            inner_body = res_data['body']
+            # If the body is a string, parse it into a list; otherwise use it as is
+            final_data = json.loads(inner_body) if isinstance(inner_body, str) else inner_body
+        elif isinstance(res_data, str):
+            # Handle cases where the entire response is stringified
+            final_data = json.loads(res_data)
         else:
-            raw_data = api_response
+            final_data = res_data
             
-        return pd.DataFrame(raw_data)
+        return pd.DataFrame(final_data)
         
     except Exception as e:
         st.error(f"API Error: {e}")
+        # If it fails, show the raw text so we can see if Athena or IAM failed
+        if 'response' in locals():
+            st.write("Raw API Output for Debugging:", response.text)
         return pd.DataFrame()
 
 # Sidebar & Global Controls
@@ -45,24 +57,30 @@ if st.sidebar.button('Manual Refresh'):
 df = get_data_from_api()
 
 if not df.empty:
-    # Data Cleaning: Convert strings to numbers for visualization
+    # --- DATA CLEANING ---
+    # Convert numbers sent as strings (from Athena/JSON) into actual floats/ints
     df['temp_current_f'] = pd.to_numeric(df['temp_current_f'], errors='coerce')
     df['cold_flu_index'] = pd.to_numeric(df['cold_flu_index'], errors='coerce').fillna(0)
 
     # KPI Metric Row
     col1, col2, col3 = st.columns(3)
     with col1:
+        # Check for High Risk alerts
         high_risk_count = len(df[df['flu_risk_category'] == 'High Risk'])
         st.metric("High Risk Alerts", high_risk_count)
 
     with col2:
+        # Calculate average temperature across the region
         avg_temp = round(df['temp_current_f'].mean(), 1)
         st.metric("Avg Region Temp", f"{avg_temp}°F")
 
     with col3:
-        # Format timestamp for display
-        latest_ts = str(df['timestamp'].iloc[0])[:16].replace('T', ' ')
-        st.write(f"**Last Sync (UTC):** {latest_ts}")
+        # Display the timestamp from the first record
+        try:
+            latest_ts = str(df['timestamp'].iloc[0])[:16].replace('T', ' ')
+            st.write(f"**Last Sync (UTC):** {latest_ts}")
+        except:
+            st.write("**Last Sync (UTC):** N/A")
 
     # Visualization
     st.subheader("Regional Risk Breakdown")
@@ -81,8 +99,8 @@ if not df.empty:
     st.altair_chart(chart, use_container_width=True)
 
     st.subheader("Raw Health Data")
-    # Using the [Streamlit Dataframe Guide](https://docs.streamlit.io)
+    # Show the interactive table [Streamlit Dataframe](https://docs.streamlit.io)
     st.dataframe(df, use_container_width=True)
 else:
-    st.warning("Waiting for fresh data from API... Check Lambda Proxy Integration settings.")
-
+    st.warning("Dashboard is currently empty. Check if the API is returning data or if your Athena table is empty.")
+    st.info("Tip: Check your [AWS CloudWatch Logs](https://console.aws.amazon.com) for the weather_api_proxy Lambda to see the latest fetch status.")
