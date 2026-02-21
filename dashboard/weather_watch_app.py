@@ -6,8 +6,8 @@ import altair as alt
 # 1. Page Configuration
 st.set_page_config(page_title="HHS Region 9 Health Watch", layout="wide")
 
-# 2. API CONFIGURATION (FIXED: Added the /weather_api_proxy route to avoid 404)
-API_URL = "https://3l6spjxqv5.execute-api.us-west-2.amazonaws.com"
+# 2. API CONFIGURATION 
+API_URL = "https://3l6spjxqv5.execute-api.us-west-2.amazonaws.com/default/weather_api_proxy"
 
 @st.cache_data(ttl=60)
 def get_data_from_api():
