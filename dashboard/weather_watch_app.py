@@ -7,7 +7,7 @@ import altair as alt
 st.set_page_config(page_title="HHS Region 9 Health Watch", layout="wide")
 
 # 2. API CONFIGURATION
-API_URL = "https://3l6spjxqv5.execute-api.us-west-2.amazonaws.com"
+API_URL = "https://3l6spjxqv5.execute-api.us-west-2.amazonaws.com/default/weather_api_proxy"
 
 @st.cache_data(ttl=60)  # Cache data for 60 seconds to stay fresh
 def get_data_from_api():
