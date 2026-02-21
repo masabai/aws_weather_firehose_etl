@@ -10,6 +10,7 @@ on:
       - 'validation/validate_weather.py'
   workflow_dispatch: # Allows manual "Run workflow" button click
 
+
 permissions:
   id-token: write   # Required for OIDC handshake
   contents: read    # Required to checkout code
@@ -20,6 +21,11 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+      - name: Debug OIDC Claims
+        run: |
+          ID_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" | jq -r .value)
+          echo "Decode this at jwt.io to see your 'sub' and 'aud' claims:"
+          echo $ID_TOKEN
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
