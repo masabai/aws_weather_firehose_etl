@@ -3,27 +3,32 @@ import pandas as pd
 import requests
 import altair as alt
 
-# Page Configuration
+# 1. Page Configuration
 st.set_page_config(page_title="HHS Region 9 Health Watch", layout="wide")
 
-# API CONFIGURATION
-API_URL = "https://3l6spjxqv5.execute-api.us-west-2.amazonaws.com/default/weather_api_proxy"
-
+# 2. API CONFIGURATION
+API_URL = "https://3l6spjxqv5.execute-api.us-west-2.amazonaws.com"
 
 @st.cache_data(ttl=60)  # Cache data for 60 seconds to stay fresh
 def get_data_from_api():
     """Fetches deduplicated Gold data from the Secure API Proxy."""
     try:
-        response = requests.get(API_URL)
+        # Added a timeout to prevent the app from hanging if the API is down
+        response = requests.get(API_URL, timeout=10)
         response.raise_for_status()
-        return pd.DataFrame(response.json())
+        data = response.json()
+        
+        if not data or len(data) == 0:
+            return pd.DataFrame()
+            
+        return pd.DataFrame(data)
     except Exception as e:
+        # This will show in the UI if the AWS Lambda or API Gateway fails
         st.error(f"API Error: {e}")
         return pd.DataFrame()
 
-
-# Sidebar & Global Controls
-st.title(" Weather & Flu Watch Alerts")
+# 3. Sidebar & Global Controls
+st.title("Weather & Flu Watch Alerts")
 st.sidebar.header("Pipeline Status: LIVE")
 
 if st.sidebar.button('Manual Refresh'):
@@ -33,25 +38,37 @@ if st.sidebar.button('Manual Refresh'):
 # 4. Load Data
 df = get_data_from_api()
 
+# 5. UI Logic
 if not df.empty:
     # KPI Metric Row
     col1, col2, col3 = st.columns(3)
+    
     with col1:
-        high_risk_count = len(df[df['flu_risk_category'] == 'High Risk'])
-        st.metric("High Risk Alerts", high_risk_count)
+        if 'flu_risk_category' in df.columns:
+            high_risk_count = len(df[df['flu_risk_category'] == 'High Risk'])
+            st.metric("High Risk Alerts", high_risk_count)
+        else:
+            st.metric("High Risk Alerts", "N/A")
 
     with col2:
-        # Athena/JSON might return numbers as strings; convert for math
-        df['temp_current_f'] = pd.to_numeric(df['temp_current_f'])
-        avg_temp = round(df['temp_current_f'].mean(), 1)
-        st.metric("Avg Region Temp", f"{avg_temp}°F")
+        if 'temp_current_f' in df.columns:
+            # Athena/JSON might return numbers as strings; convert for math
+            df['temp_current_f'] = pd.to_numeric(df['temp_current_f'], errors='coerce')
+            avg_temp = round(df['temp_current_f'].mean(), 1)
+            st.metric("Avg Region Temp", f"{avg_temp}°F")
+        else:
+            st.metric("Avg Region Temp", "N/A")
 
     with col3:
-        latest_ts = df['timestamp'].iloc[0][:16].replace('T', ' ')
-        st.write(f"**Last Sync (UTC):** {latest_ts}")
+        if 'timestamp' in df.columns:
+            latest_ts = str(df['timestamp'].iloc[0])[:16].replace('T', ' ')
+            st.write(f"**Last Sync (UTC):** {latest_ts}")
+        else:
+            st.write("**Last Sync:** Unknown")
 
     # Visualization
     st.subheader("Regional Risk Breakdown")
+    
     color_scale = alt.Scale(
         domain=['High Risk', 'Moderate Risk', 'Low Risk'],
         range=['#FF0000', '#0000FF', '#00FF00']
@@ -64,9 +81,22 @@ if not df.empty:
         tooltip=['location', 'state', 'cold_flu_index', 'flu_risk_category']
     ).properties(height=400)
 
-    st.altair_chart(chart, use_container_width=True)
+    # UPDATED: Replaced use_container_width with width="stretch"
+    st.altair_chart(chart, width="stretch")
 
     st.subheader("Raw Health Data")
-    st.dataframe(df, use_container_width=True)
+    # UPDATED: Replaced use_container_width with width="stretch"
+    st.dataframe(df, width="stretch")
+
 else:
-    st.warning("Waiting for fresh data from API...")
+    st.warning("No data returned from API. The pipeline might be empty or the Lambda function is failing to query Athena.")
+    
+    # Debugging Section for developers
+    with st.expander("Developer Debug Info"):
+        st.write("Checking connection to API...")
+        try:
+            test_res = requests.get(API_URL, timeout=5)
+            st.write(f"API Status Code: {test_res.status_code}")
+            st.write("Raw API Output:", test_res.text)
+        except Exception as debug_e:
+            st.write(f"Connection Test Failed: {debug_e}")
