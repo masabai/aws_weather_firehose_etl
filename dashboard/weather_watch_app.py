@@ -2,28 +2,39 @@ import streamlit as st
 import pandas as pd
 import requests
 import altair as alt
+import json
 
 # Page Configuration
 st.set_page_config(page_title="HHS Region 9 Health Watch", layout="wide")
 
 # API CONFIGURATION
-API_URL = "https://3l6spjxqv5.execute-api.us-west-2.amazonaws.com/default/weather_api_proxy"
+API_URL = "https://3l6spjxqv5.execute-api.us-west-2.amazonaws.com"
 
-
-@st.cache_data(ttl=60)  # Cache data for 60 seconds to stay fresh
+@st.cache_data(ttl=60)
 def get_data_from_api():
-    """Fetches deduplicated Gold data from the Secure API Proxy."""
+    """Fetches data and handles the AWS Lambda Proxy 'body' string wrapper."""
     try:
         response = requests.get(API_URL)
         response.raise_for_status()
-        return pd.DataFrame(response.json())
+        
+        # Parse the top-level JSON from API Gateway
+        api_response = response.json()
+        
+        # Extract the 'body' string (this is what changed in your AWS setup)
+        # If 'body' doesn't exist, fall back to the whole response
+        if isinstance(api_response, dict) and 'body' in api_response:
+            raw_data = json.loads(api_response['body'])
+        else:
+            raw_data = api_response
+            
+        return pd.DataFrame(raw_data)
+        
     except Exception as e:
         st.error(f"API Error: {e}")
         return pd.DataFrame()
 
-
 # Sidebar & Global Controls
-st.title(" Weather & Flu Watch Alerts")
+st.title("Weather & Flu Watch Alerts")
 st.sidebar.header("Pipeline Status: LIVE")
 
 if st.sidebar.button('Manual Refresh'):
@@ -34,6 +45,10 @@ if st.sidebar.button('Manual Refresh'):
 df = get_data_from_api()
 
 if not df.empty:
+    # Data Cleaning: Convert strings to numbers for visualization
+    df['temp_current_f'] = pd.to_numeric(df['temp_current_f'], errors='coerce')
+    df['cold_flu_index'] = pd.to_numeric(df['cold_flu_index'], errors='coerce').fillna(0)
+
     # KPI Metric Row
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -41,13 +56,12 @@ if not df.empty:
         st.metric("High Risk Alerts", high_risk_count)
 
     with col2:
-        # Athena/JSON might return numbers as strings; convert for math
-        df['temp_current_f'] = pd.to_numeric(df['temp_current_f'])
         avg_temp = round(df['temp_current_f'].mean(), 1)
         st.metric("Avg Region Temp", f"{avg_temp}°F")
 
     with col3:
-        latest_ts = df['timestamp'].iloc[0][:16].replace('T', ' ')
+        # Format timestamp for display
+        latest_ts = str(df['timestamp'].iloc[0])[:16].replace('T', ' ')
         st.write(f"**Last Sync (UTC):** {latest_ts}")
 
     # Visualization
@@ -58,7 +72,7 @@ if not df.empty:
     )
 
     chart = alt.Chart(df).mark_bar().encode(
-        x=alt.X('location:N', title='City'),
+        x=alt.X('location:N', title='City', sort='-y'),
         y=alt.Y('cold_flu_index:Q', title='Cold/Flu Index'),
         color=alt.Color('flu_risk_category:N', scale=color_scale, title='Risk Level'),
         tooltip=['location', 'state', 'cold_flu_index', 'flu_risk_category']
@@ -67,6 +81,8 @@ if not df.empty:
     st.altair_chart(chart, use_container_width=True)
 
     st.subheader("Raw Health Data")
+    # Using the [Streamlit Dataframe Guide](https://docs.streamlit.io)
     st.dataframe(df, use_container_width=True)
 else:
-    st.warning("Waiting for fresh data from API...")
+    st.warning("Waiting for fresh data from API... Check Lambda Proxy Integration settings.")
+
