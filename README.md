@@ -61,7 +61,7 @@ This scheduled execution model enables fully automated, time-based ingestion wit
 
 ---
 
-##### *AWS Lambda ETL Validator: Raw → Silver Transformation* #####
+##### *AWS Lambda ELT Validator: Raw → Silver Transformation* #####
 
 AWS Lambda is triggered by S3 `ObjectCreated` events in the `raw/` prefix to perform automated data validation.  
 It inspects each record for required weather and health fields, filters out malformed or incomplete entries, and routes clean data to the `silver/` zone while sending errors to a `quarantine/` zone for investigation.  
@@ -84,7 +84,7 @@ S3 Lifecycle Policies automatically recycle `athena-results/` and `raw/` data af
 ##### *Analytics: Amazon Athena SQL Queries for Latest Status Snapshots* #####
 
 Amazon Athena provides SQL-based analytics directly on S3 using a Schema-on-Read approach.  
-This enables real-time queries for regional health risks without duplicating data or incurring extra ETL overhead.  
+This enables real-time queries for regional health risks without duplicating data or incurring extra ELT overhead.  
 
 ![Athena Analytics Results](screenshots/weather_athena_results.png)
 
