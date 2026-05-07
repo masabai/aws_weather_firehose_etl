@@ -3,7 +3,7 @@ AWS Lambda Producer: Weather & Health Data Pipeline
 --------------------------------------------------
 Fetches real-time weather, air quality (AQI), and health indices (Cold/Flu, Migraine)
 from OpenWeather and AccuWeather APIs. Data is unified and pushed to an
-Amazon Kinesis Data Firehose delivery stream for downstream ETL and Athena querying.
+Amazon Kinesis Data Firehose delivery stream for downstream ELT and Athena querying.
 
 Date: 2026-02-02
 """
